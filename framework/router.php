@@ -1,5 +1,4 @@
 <?php
-use Core\Access;
 
 /**
  * Router HTTP-requests to classes. Call when trying to access a non-existent script or
