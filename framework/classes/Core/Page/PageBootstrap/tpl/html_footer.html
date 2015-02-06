@@ -1,0 +1,30 @@
+
+
+
+{% if debug %}
+<a id="link-modal-debug" href="#modal-debug" data-toggle="modal">debug</a>
+<div id="modal-debug" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Debug info</h4>
+            </div>
+            <div class="modal-body">
+                <ul class="list-unstyled list-debug">
+                    <li>Time execution: {{ time_exec }} sec.</li>
+                    <li>Memory usage: {{ memory_usage }} Mb</li>
+                    <li>Debug DB queries count: {{ debug_db_queries_count }}</li>
+                    {% if debug_db_queries_count > 0 %}
+                        <li>Debug heaviest query time: {{ debug_heaviest_query_time }} sec.</li>
+                        <li>Debug heaviest query: <br> {{ debug_heaviest_query }}</li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

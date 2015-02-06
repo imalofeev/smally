@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+
+<html lang="ru"
+    {% if html_attributes %}
+        {% for html_attribute_name, html_attribute_value in html_attributes %}
+            {{ html_attribute_name }}="{{ html_attribute_value }}"
+        {% endfor %}
+    {% endif %}
+>
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="{{ encoding }}" />
+    <title>{{ title }}</title>
+
+    {% if css %}
+        {% for css_item in css %}
+            <link rel="stylesheet" href="{{ css_item }}" />
+        {% endfor %}
+    {% endif %}
+
+    {% if css_inline %}
+        <style type="text/css">{{ css_inline }}</style>
+    {% endif %}
+
+    {% if javascripts %}
+        {% for javascript in javascripts %}
+            <script src="{{ javascript_item }}"></script>
+        {% endfor %}
+    {% endif %}
+
+    {% if optional_head_content %}
+        {{ optional_head_content }}
+    {% endif %}
+
+</head>
+<body
+    {% if body_attributes %}
+        {% for body_attribute_name, body_attribute_value in body_attributes %}
+            {{ html_attribute_name }}="{{ html_attribute_value }}"
+        {% endfor %}
+    {% endif %}
+>

@@ -1,0 +1,19 @@
+
+        {% if css_body %}
+            {% for css_body_item in css_body %}
+        <link rel="stylesheet" href="{{ css_body_item }}" />
+        {% endfor %}
+        {% endif %}
+
+        {% if javascripts_body %}
+            {% for javascript_body in javascripts_body %}
+            <script src="{{ javascript_body }}"></script>
+            {% endfor %}
+        {% endif %}
+
+        {% if javascript_inline %}
+            <script>{{ javascript_inline }}</script>
+        {% endif %}
+
+    </body>
+</html>
