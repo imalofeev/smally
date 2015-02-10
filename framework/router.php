@@ -2,7 +2,7 @@
 
 /**
  * Router HTTP-requests to classes. Call when trying to access a non-existent script or
- * if the relative URL begins with a capital letter (mod_rewrite-rule in .htaccess).
+ * if the relative URL begins with a capital letter (mod_rewrite rule)
  * Implemented the following scheme HTTP-requests:
  * (1) /ClassName — invoke static method Index_HTTP or Index (or other, which set in class tag @http_default_static_method)
  *     Parameters are not supported.
