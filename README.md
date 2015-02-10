@@ -1,3 +1,3 @@
 # Smally
 
-Smally is small framework based on MVC model
+Smally is a small framework based on MVC model
