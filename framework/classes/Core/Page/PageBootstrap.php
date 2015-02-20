@@ -20,9 +20,9 @@ class PageBootstrap extends Page
     );
 
     public $javascriptsBody = array(
-        "/lib/jquery/1.11.0/jquery-1.11.0.min.js",
-        "/lib/bootstrap/js/bootstrap.min.js",
-        "/classes/Core/Page/PageBootstrap/js/common.js",
+        '/lib/jquery/1.11.0/jquery-1.11.0.min.js',
+        '/lib/bootstrap/js/bootstrap.min.js',
+        '/classes/Core/Page/PageBootstrap/js/common.js',
     );
 
     /**
