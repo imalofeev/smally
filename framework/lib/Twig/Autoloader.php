@@ -25,7 +25,6 @@ class Twig_Autoloader
     {
         if (version_compare(phpversion(), '5.3.0', '>=')) {
             spl_autoload_register(array(__CLASS__, 'autoload'), true, $prepend);
-            spl_autoload_register('__autoload', true, true); // явная регистрация в стэке __autoload, иначе не вызовет __autoload() в site.php для классов движка
         } else {
             spl_autoload_register(array(__CLASS__, 'autoload'));
         }

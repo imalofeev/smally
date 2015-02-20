@@ -7,42 +7,35 @@ use Core\HTTP;
  */
 abstract class DBPg
 {
-    protected static $connection;
+    protected static $_connection;
 
-    protected static $host;
-    protected static $dbname;
-    protected static $user;
-    protected static $password;
+    protected static $_host;
+    protected static $_dbname;
+    protected static $_user;
+    protected static $_password;
 
     /**
      * Initialize connection
      */
-    protected static function InitConnection()
+    protected static function initConnection()
     {
-        $connectionString = 'host='     . static::$host .
-                            ' dbname='   . static::$dbname .
-                            ' user='     . static::$user .
-                            ' password=' . static::$password;
+        $connectionString = 'host='     . static::$_host .
+                            ' dbname='   . static::$_dbname .
+                            ' user='     . static::$_user .
+                            ' password=' . static::$_password;
 
         $connection = pg_connect($connectionString, PGSQL_CONNECT_FORCE_NEW);
 
         if (false === $connection) {
-            static::MaintenanceBanner();
+            HTTP::sendStatusCode('HTTP/1.1 503 Service Unavailable', '503 Service Unavailable');
         } else {
-            static::$connection = $connection;
+            static::$_connection = $connection;
 
             // if you need to set any connection params (time zone, client_encoding...), set them here
+            // example:
+            // static::execute("SET client_encoding TO 'UTF-8'");
 
         }
-    }
-
-    /**
-     * Render mintenance banner
-     */
-    public static function MaintenanceBanner()
-    {
-        HTTP::ServiceUnavailable503();
-        exit();
     }
 
     /**
@@ -54,34 +47,21 @@ abstract class DBPg
      *
      * @throws \Exception
      */
-    public static function Execute($query)
+    public static function execute($query)
     {
-        global $debug;
-         
         if (!trim($query)) {
             throw new \Exception('SQL-query is not defined');
         } else {
-            if (!isset(static::$connection)) {
-                static::InitConnection();
+            if (!isset(static::$_connection)) {
+                static::initConnection();
             }
             	
-            if ($debug) {
-                $GLOBALS['debug_db_queries_count']++;
-                $debugQueryStart = microtime(true);
-            }
+            $startTime = static::startDebug();
+            $result = pg_query(static::$_connection, $query);
+            static::finishDebug($startTime, $query);
 
-            $result = pg_query(static::$connection, $query);
-            	
-            if ($debug) {
-                $debugQueryTime = microtime(true) - $debugQueryStart;
-                if ($debugQueryTime > $GLOBALS['debug_heaviest_query_time']) {
-                    $GLOBALS['debug_heaviest_query_time'] = $debugQueryTime;
-                    $GLOBALS['debug_heaviest_query'] = $query;
-                }
-            }
-            
             if ($result === false) {
-                throw new \Exception('PostgreSQL error: ' . pg_last_error(static::$connection));
+                throw new \Exception('PostgreSQL error: ' . pg_last_error(static::$_connection));
             } else {
                 return true;
             }
@@ -98,17 +78,17 @@ abstract class DBPg
      *
      * @throws \Exception
      */
-    public static function Insert($tableName, $data = array())
+    public static function insert($tableName, $data = array())
     {
         if (!trim($tableName)) {
             throw new \Exception('Table name is not defined');
         } else {
             try {
                 $sql = static::buildInsertQuery($tableName, $data);
-                $result = static::Execute($sql);  // do not pg_insert, it's not return error
+                $result = static::execute($sql);  // do not pg_insert, it's not return error
                 return $result;
             } catch (\Exception $e) {
-                throw new \Exception('PostgreSQL error: ' . pg_last_error(static::$connection));
+                throw new \Exception('PostgreSQL error: ' . pg_last_error(static::$_connection));
             }
         }
     }
@@ -124,7 +104,7 @@ abstract class DBPg
      *
      * @throws \Exception
      */
-    public static function Update($tableName, $data, $condition = array())
+    public static function update($tableName, $data, $condition = array())
     {
         if (!trim($tableName)) {
             throw new \Exception('Table name is not defined');
@@ -132,10 +112,10 @@ abstract class DBPg
             if (is_array($condition)) {
                 try {
                     $sql = static::buildUpdateQuery($tableName, $data, $condition);
-                    $result = static::Execute($sql);
+                    $result = static::execute($sql);
                     return $result;
                 } catch (\Exception $e) {
-                    throw new \Exception('PostgreSQL error: ' . pg_last_error(static::$connection));
+                    throw new \Exception('PostgreSQL error: ' . pg_last_error(static::$_connection));
                 }
             } else {
                 throw new \Exception('Condition is not correct');
@@ -153,7 +133,7 @@ abstract class DBPg
      *
      * @throws \Exception
      */
-    public static function Delete($tableName, $condition)
+    public static function delete($tableName, $condition)
     {
         if (!trim($tableName)) {
             throw new \Exception('Table name is not defined');
@@ -161,10 +141,10 @@ abstract class DBPg
             if (is_array($condition)) {
                 try {
                     $sql = static::buildDeleteQuery($tableName, $condition);
-                    $result = static::Execute($sql);
+                    $result = static::execute($sql);
                     return $result;
                 } catch (\Exception $e) {
-                    throw new \Exception('PostgreSQL error: ' . pg_last_error(static::$connection));
+                    throw new \Exception('PostgreSQL error: ' . pg_last_error(static::$_connection));
                 }
             } else {
                 throw new \Exception('Condition is not correct');
@@ -292,10 +272,10 @@ abstract class DBPg
             } else {
                 return 'false';
             }
-            	
+
         } elseif (is_null($value)) {
             return 'null';
-            	
+
         } else {
             $value = str_replace("'", "''", $value);
             return "'" . $value . "'";
@@ -311,36 +291,23 @@ abstract class DBPg
      *
      * @throws \Exception
      */
-    public static function Rows($query)
+    public static function getRows($query)
     {
-        global $debug;
-
-        if (!isset(static::$connection)) {
-            static::InitConnection();
+        if (!isset(static::$_connection)) {
+            static::initConnection();
         }
 
-        if ($debug) {
-            $GLOBALS['debug_db_queries_count']++;
-            $debugQueryStart = microtime(true);
-        }
-        
-        $result = pg_query(static::$connection, $query);
-
-        if ($debug) {
-            $debugQueryTime = microtime(true) - $debugQueryStart;
-            if ($debugQueryTime > $GLOBALS['debug_heaviest_query_time']) {
-                $GLOBALS['debug_heaviest_query_time'] = $debugQueryTime;
-                $GLOBALS['debug_heaviest_query'] = $query;
-            }
-        }
+        $startTime = static::startDebug();
+        $result = pg_query(static::$_connection, $query);
+        static::finishDebug($startTime, $query);
 
         if (false === $result) {
-            throw new \Exception(pg_last_error(static::$connection));
+            throw new \Exception(pg_last_error(static::$_connection));
         } else {
             return pg_fetch_all($result);
         }
     }
-    
+
     /**
      * Return sql-query result in row
      *
@@ -350,31 +317,18 @@ abstract class DBPg
      *
      * @throws \Exception
      */
-    public static function Row($query)
+    public static function getRow($query)
     {
-        global $debug;
-         
-        if (!isset(static::$connection)) {
-            static::InitConnection();
+        if (!isset(static::$_connection)) {
+            static::initConnection();
         }
 
-        if ($debug) {
-            $GLOBALS['debug_db_queries_count']++;
-            $debugQueryStart = microtime(true);
-        }
-
-        $result = pg_query(static::$connection, $query);
-
-        if ($debug) {
-            $debugQueryTime = microtime(true) - $debugQueryStart;
-            if ($debugQueryTime > $GLOBALS['debug_heaviest_query_time']) {
-                $GLOBALS['debug_heaviest_query_time'] = $debugQueryTime;
-                $GLOBALS['debug_heaviest_query'] = $query;
-            }
-        }
+        $startTime = static::startDebug();
+        $result = pg_query(static::$_connection, $query);
+        static::finishDebug($startTime, $query);
 
         if (false === $result) {
-            throw new \Exception(pg_last_error(static::$connection));
+            throw new \Exception(pg_last_error(static::$_connection));
         } else {
             return pg_fetch_assoc($result);
         }
@@ -390,31 +344,18 @@ abstract class DBPg
      *
      * @throws \Exception
      */
-    public static function Column($query)
+    public static function getColumn($query)
     {
-        global $debug;
-
-        if(!isset(static::$connection)) {
-            static::InitConnection();
+        if(!isset(static::$_connection)) {
+            static::initConnection();
         }
 
-        if ($debug) {
-            $GLOBALS['debug_db_queries_count']++;
-            $debugQueryStart = microtime(true);
-        }
-
-        $result = pg_query(static::$connection, $query);
-
-        if ($debug) {
-            $debugQueryTime = microtime(true) - $debugQueryStart;
-            if ($debugQueryTime > $GLOBALS['debug_heaviest_query_time']) {
-                $GLOBALS['debug_heaviest_query_time'] = $debugQueryTime;
-                $GLOBALS['debug_heaviest_query'] = $query;
-            }
-        }
+        $startTime = static::startDebug();
+        $result = pg_query(static::$_connection, $query);
+        static::finishDebug($startTime, $query);
 
         if (false === $result) {
-            throw new \Exception(pg_last_error(static::$connection));
+            throw new \Exception(pg_last_error(static::$_connection));
         } else {
             return pg_fetch_all_columns($result, 0);
         }
@@ -429,37 +370,60 @@ abstract class DBPg
      *
      * @throws \Exception
      */
-    public static function Value($query)
+    public static function getValue($query)
     {
-        global $debug;
-
-        if(!isset(static::$connection)) {
-            static::InitConnection();
+        if(!isset(static::$_connection)) {
+            static::initConnection();
         }
 
-        if ($debug) {
-            $GLOBALS['debug_db_queries_count']++;
-            $debugQueryStart = microtime(true);
-        }
-
-        $result = pg_query(static::$connection, $query);
-
-        if ($debug) {
-            $debugQueryTime = microtime(true) - $debugQueryStart;
-            if ($debugQueryTime > $GLOBALS['debug_heaviest_query_time']) {
-                $GLOBALS['debug_heaviest_query_time'] = $debugQueryTime;
-                $GLOBALS['debug_heaviest_query'] = $query;
-            }
-        }
+        $startTime = static::startDebug();
+        $result = pg_query(static::$_connection, $query);
+        static::finishDebug($startTime, $query);
 
         if (false === $result) {
-            throw new \Exception(pg_last_error(static::$connection));
+            throw new \Exception(pg_last_error(static::$_connection));
         } else {
             if (pg_num_rows($result)) {
                 $result = pg_fetch_result($result, 0, 0);
                 return $result;
             } else {
                 return false;
+            }
+        }
+    }
+
+    /**
+     * If $GLOBALS['debug'] is true start debug, count query and return microtime
+     *
+     * @return mixed
+     */
+    private static function startDebug()
+    {
+        // $debug define in config develop.php
+        global $debug;
+        if ($debug) {
+            $GLOBALS['debug_db_queries_count']++;
+            return microtime(true);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Finish debug, computes the heaviest query and query time
+     *
+     * @param $startTime
+     * @param $query
+     */
+    private static function finishDebug($startTime, $query)
+    {
+        // $debug define in config develop.php
+        global $debug;
+        if ($debug) {
+            $queryTime = microtime(true) - $startTime;
+            if ($queryTime > $GLOBALS['debug_heaviest_query_time']) {
+                $GLOBALS['debug_heaviest_query_time'] = $queryTime;
+                $GLOBALS['debug_heaviest_query'] = $query;
             }
         }
     }

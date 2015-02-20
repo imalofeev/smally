@@ -3,4 +3,4 @@ RewriteEngine on
 RewriteBase /
 RewriteCond %{SCRIPT_FILENAME} !-d  
 RewriteCond %{SCRIPT_FILENAME} !-f 
-RewriteRule ^([A-Z].*)$ router.php
+RewriteRule ^([A-Z].*)$ index.php

@@ -43,21 +43,21 @@ class TestApp extends Application
 
     /**
      * Property_1
-     * Field in DB with name "property_1"
+     * Field in DB with name "_property_1"
      *
      * @db_type text
      * @var integer
      */
-    protected $property_1;
+    protected $_property_1;
 
     /**
      * Property_2
-     * Field in DB with name "property_2"
+     * Field in DB with name "_property_2"
      *
      * @db_type integer
      * @var integer
      */
-    private $property_2;
+    private $_property_2;
 
     // ... and other properties = fields in DB
 
@@ -75,14 +75,14 @@ class TestApp extends Application
      *
      * @var string
      */
-    protected $property_4;
+    protected $_property_4;
 
     /**
      * Property_5
      *
      * @var boolean
      */
-    private $property_5;
+    private $_property_5;
 
     // ... and other properties only for class or object (not in DB)
 
@@ -90,73 +90,104 @@ class TestApp extends Application
 	/**
      * @http_callable
 	 */
-	public static function Index()
+	public static function index()
 	{
-        PageBootstrap::Start();
-		$template = Template::getTemplate(__DIR__ . '/tpl', 'index.html');
+        $template = Template::getTemplate(__DIR__ . '/tpl', 'index.html');
+
+        PageBootstrap::getInstance()->addBreadcrumb('Main', '/', 'glyphicon-home', 'Go to main page');
+        PageBootstrap::getInstance()->addBreadcrumb('TestApp', '', '', 'TestApp page');
+        PageBootstrap::start();
         $template->display(array());
-        PageBootstrap::Finish();
+        PageBootstrap::finish();
 
 	}
 
     /**
      * @http_callable
      */
-    public static function StaticMethod_1()
+    public static function staticMethod_1()
     {
-        PageBootstrap::Start();
         $template = Template::getTemplate(__DIR__ . '/tpl', 'static_method_1.html');
+
+        PageBootstrap::getInstance()->addBreadcrumb('Main', '/', 'glyphicon-home', 'Go to main page');
+        PageBootstrap::getInstance()->addBreadcrumb('TestApp', '/TestApp');
+        PageBootstrap::getInstance()->addBreadcrumb('StaticMethod_1');
+        PageBootstrap::start();
         $template->display(array());
-        PageBootstrap::Finish();
+        PageBootstrap::finish();
     }
 
     /**
      * @http_callable
      */
-    public static function StaticMethod_2($param1, $param2)
+    public static function staticMethod_2($param1, $param2)
     {
-        PageBootstrap::Start();
         $template = Template::getTemplate(__DIR__ . '/tpl', 'static_method_2.html');
+
+        PageBootstrap::getInstance()->addBreadcrumb('Main', '/', 'glyphicon-home', 'Go to main page');
+        PageBootstrap::getInstance()->addBreadcrumb('TestApp', '/TestApp');
+        PageBootstrap::getInstance()->addBreadcrumb('StaticMethod_2');
+        PageBootstrap::start();
         $template->display(array('param1' => $param1, 'param2' => $param2));
-        PageBootstrap::Finish();
+        PageBootstrap::finish();
 
     }
 
     /**
      * @http_callable
      */
-    public function Display()
+    public function display()
     {
-        PageBootstrap::Start();
         $template = Template::getTemplate(__DIR__ . '/tpl', 'display.html');
-        $template->display(array('object_data' => $this->getObjectArray()));
-        PageBootstrap::Finish();
+
+        $objectData = $this->getObjectArray();
+
+        PageBootstrap::getInstance()->addBreadcrumb('Main', '/', 'glyphicon-home', 'Go to main page');
+        PageBootstrap::getInstance()->addBreadcrumb('TestApp', '/TestApp');
+        PageBootstrap::getInstance()->addBreadcrumb('Object ' . $objectData['id']);
+        PageBootstrap::start();
+        $template->display(array('object_data' => $objectData));
+        PageBootstrap::finish();
 
     }
 
     /**
      * @http_callable
      */
-    public function ObjectMethod_1()
+    public function objectMethod_1()
     {
-        PageBootstrap::Start();
         $template = Template::getTemplate(__DIR__ . '/tpl', 'object_method_1.html');
-        $template->display(array('object_data' => $this->getObjectArray()));
-        PageBootstrap::Finish();
+
+        $objectData = $this->getObjectArray();
+
+        PageBootstrap::getInstance()->addBreadcrumb('Main', '/', 'glyphicon-home', 'Go to main page');
+        PageBootstrap::getInstance()->addBreadcrumb('TestApp', '/TestApp');
+        PageBootstrap::getInstance()->addBreadcrumb('Object ' . $objectData['id'], '/TestApp/' . $objectData['id']);
+        PageBootstrap::getInstance()->addBreadcrumb('ObjectMethod_1');
+        PageBootstrap::start();
+        $template->display(array('object_data' => $objectData));
+        PageBootstrap::finish();
 
     }
 
     /**
      * @http_callable
      */
-    public function ObjectMethod_2($param1, $param2)
+    public function objectMethod_2($param1, $param2)
     {
-        PageBootstrap::Start();
         $template = Template::getTemplate(__DIR__ . '/tpl', 'object_method_2.html');
+
+        $objectData = $this->getObjectArray();
+
+        PageBootstrap::getInstance()->addBreadcrumb('Main', '/', 'glyphicon-home', 'Go to main page');
+        PageBootstrap::getInstance()->addBreadcrumb('TestApp', '/TestApp');
+        PageBootstrap::getInstance()->addBreadcrumb('Object ' . $objectData['id'], '/TestApp/' . $objectData['id']);
+        PageBootstrap::getInstance()->addBreadcrumb('ObjectMethod_2');
+        PageBootstrap::start();
         $template->display(array('param1' => $param1,
                                  'param2' => $param2,
-                                 'object_data' => $this->getObjectArray()));
-        PageBootstrap::Finish();
+                                 'object_data' => $objectData));
+        PageBootstrap::finish();
 
     }
 
@@ -173,6 +204,4 @@ class TestApp extends Application
 
         return $objectData;
     }
-
-
 }

@@ -13,7 +13,7 @@ abstract class Application
 	 * Objects cache (Key is ObjectID)
 	 * @var array
 	 */
-	protected static $cache;
+	protected static $_cache;
 	
 	
 	/**
@@ -72,9 +72,11 @@ abstract class Application
 	 */
 	public static function getApplicationTagValue($phpDocTag)
 	{
-		return static::isApplicationHasTag($phpDocTag)
-				? static::getApplicationDocBlock()->getTagValue($phpDocTag)
-				: '';
+        if (static::isApplicationHasTag($phpDocTag)) {
+            return static::getApplicationDocBlock()->getTagValue($phpDocTag);
+        } else {
+            return '';
+        }
 	}
 	
 	/**
@@ -110,15 +112,15 @@ abstract class Application
 	 */
 	public static function byID($id)
 	{
-		if (isset(static::$cache[$id])) {
-			return static::$cache[$id];
+		if (isset(static::$_cache[$id])) {
+			return static::$_cache[$id];
 		} else {
             $sql = "SELECT *
                       FROM " . DBPgConnect::formatRegclassTablename(static::getApplicationTableName()) . "
                       WHERE " . static::getApplicationDBPrimaryKey() . " = " . DBPgConnect::formatValue($id);
-			$db_row = DBPgConnect::Row($sql);
+			$db_row = DBPgConnect::getRow($sql);
 			$Object = new static($db_row);
-			static::$cache[$id] = $Object;
+			static::$_cache[$id] = $Object;
 			return $Object;
 		}
 	}

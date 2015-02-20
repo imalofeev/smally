@@ -11,33 +11,33 @@ class DocBlock
      *
      * @var string
      */
-    private $string;
+    private $_string;
 
     /**
      * @var bool
      */
-    private $isStringParsed;
+    private $_isStringParsed;
 
     /**
      * Array with PHPDocTags
      *
      * @var array
      */
-    private $tags;
+    private $_tags;
 
     /**
      * Strings without tags
      *
      * @var array
      */
-    private $descriptionStrings;
+    private $_descriptionStrings;
 
     /**
      *
      * @param string $string string with PHPDocTags
      */
     public function __construct($string) {
-        $this->string = $string;
+        $this->_string = $string;
     }
 
     /**
@@ -57,14 +57,14 @@ class DocBlock
      * @return boolean
      */
     public function hasTag($tagName) {
-        if($this->isStringParsed){
-            if(array_key_exists($tagName, $this->tags)) {
+        if($this->_isStringParsed){
+            if(array_key_exists($tagName, $this->_tags)) {
                 return true;
             } else {
                 return false;
             }
         }else{
-            if(strstr($this->string, '@'.$tagName)) {
+            if(strstr($this->_string, '@'.$tagName)) {
                 $this->parseTags();
                 return $this->hasTag($tagName);
             }else{
@@ -81,11 +81,11 @@ class DocBlock
      * @return mixed
      */
     public function getTagValue($tagName) {
-        if(!$this->isStringParsed) {
+        if(!$this->_isStringParsed) {
             $this->parseTags();
         }
 
-        return $this->tags[$tagName];
+        return $this->_tags[$tagName];
     }
 
     /**
@@ -93,39 +93,39 @@ class DocBlock
      *
      */
     private function parseTags() {
-        $strings = explode("\n",$this->string);
-
+        $strings = explode("\n",$this->_string);
+        
         foreach($strings as $string) {
             $string = trim($string);
 
             if(substr($string,0,3)=='* @'){
                 list($tagName,$tag_value) = explode(' ', substr($string,3),2);
-                if(isset($this->tags[$tagName]) && is_array($this->tags[$tagName])) {
-                    $this->tags[$tagName][] = $tag_value;
-                } else if (isset($this->tags[$tagName])) {
-                    $this->tags[$tagName] = array($this->tags[$tagName], $tag_value);
+                if(isset($this->_tags[$tagName]) && is_array($this->_tags[$tagName])) {
+                    $this->_tags[$tagName][] = $tag_value;
+                } else if (isset($this->_tags[$tagName])) {
+                    $this->_tags[$tagName] = array($this->_tags[$tagName], $tag_value);
                 } else {
-                    $this->tags[$tagName] = $tag_value;
+                    $this->_tags[$tagName] = $tag_value;
                 }
             }elseif(substr($string,0,2) == '* '){
-                $this->descriptionStrings[] = substr($string,2);
+                $this->_descriptionStrings[] = substr($string,2);
             }
 
         }
 
-        $this->isStringParsed = true;
+        $this->_isStringParsed = true;
     }
 
     /**
      * Return comment without tags
      * @return string
      */
-    public function Description() {
-        if(!$this->isStringParsed) {
+    public function getDescription() {
+        if(!$this->_isStringParsed) {
             $this->parseTags();
         }
 
-        return implode("\n", $this->descriptionStrings);
+        return implode("\n", $this->_descriptionStrings);
     }
 
     /**
@@ -134,11 +134,11 @@ class DocBlock
      * @return array
      */
     public function getTags() {
-        if(!$this->isStringParsed) {
+        if(!$this->_isStringParsed) {
             $this->parseTags();
         }
 
-        return $this->tags;
+        return $this->_tags;
     }
 
     /**
@@ -149,14 +149,14 @@ class DocBlock
      * @return array
      */
     public function getTagValues($tagName) {
-        if(!$this->isStringParsed) {
+        if(!$this->_isStringParsed) {
             $this->parseTags();
         }
 
-        if(is_array($this->tags[$tagName])){
-            return $this->tags[$tagName];
+        if(is_array($this->_tags[$tagName])){
+            return $this->_tags[$tagName];
         }else{
-            return array($this->tags[$tagName]);
+            return array($this->_tags[$tagName]);
         }
     }
 

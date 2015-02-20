@@ -9,8 +9,8 @@ namespace Core\DB;
 class DBPgConnect extends DBPg
 {
     // Fill properties:
-    protected static $host     = '';
-    protected static $dbname   = '';
-    protected static $user     = '';
-    protected static $password = '';
+    protected static $_host     = '';
+    protected static $_dbname   = '';
+    protected static $_user     = '';
+    protected static $_password = '';
 }

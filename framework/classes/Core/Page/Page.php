@@ -1,6 +1,5 @@
 <?php
 namespace Core\Page;
-
 use Core\Template;
 
 /**
@@ -8,18 +7,18 @@ use Core\Template;
  *
  * Usage scenario in children classes:
  *
- *      PageTB::Current()->$javascripts[] = 'path_to_file'
- *      PageTB::Current()->$CSS[] = 'path_to_file'
+ *      PageTB::getInstance()->$javascripts[] = 'path_to_file'
+ *      PageTB::getInstance()->$CSS[] = 'path_to_file'
  *      ...
- * 		Page::Start('...')  at the beginning of the page
+ * 		Page::start('...')  at the beginning of the page
  *      render content
- * 		Page::Finish()      at the end of the page
+ * 		Page::finish()      at the end of the page
  *
  */
 
 abstract class Page
 {
-    const PATH_TO_TPL  = '';
+    const TEMPLATE_PATH  = '';
     
     const TPL_HTML_START  = '';
     const TPL_HTML_END    = '';
@@ -31,7 +30,7 @@ abstract class Page
      *
      * @var static class
      */
-    protected static $_CurrentPage;
+    protected static $_Instance;
 
     /**
      * Title
@@ -118,11 +117,11 @@ abstract class Page
     public $bodyAttributes = array();
 
     /**
-     * Array with breadcrambs - filled through AddBreadcrumb()
+     * Array with breadcrambs - filled through addBreadcrumb()
      *
      * @var array
      */
-    protected $breadcrumbs;
+    protected $_breadcrumbs = array();
 
     final private function __construct() {}
 
@@ -133,12 +132,12 @@ abstract class Page
      *
      * @return static
      */
-    public static function Current()
+    public static function getInstance()
     {
-        if (!isset(static::$_CurrentPage)) {
-            static::$_CurrentPage = new static;
+        if (!isset(static::$_Instance)) {
+            static::$_Instance = new static;
         }
-        return static::$_CurrentPage;
+        return static::$_Instance;
     }
 
     /**
@@ -146,11 +145,11 @@ abstract class Page
      *
      * @param string $title
      */
-    public static function Start($title = '')
+    public static function start($title = '')
     {
-        if ($title) static::Current()->title = $title;
+        if ($title) static::getInstance()->title = $title;
 
-        static::Current()->RenderStart();
+        static::getInstance()->renderStart();
     }
 
     /**
@@ -158,17 +157,17 @@ abstract class Page
      *  HTTP-headers
      *  and <html><head>...</head><body>
      */
-    protected function RenderStart()
+    protected function renderStart()
     {
-        $this->OutputHeaders();
-        $this->RenderHTMLStart();
-        $this->RenderHeader();
+        $this->sendOutputHeaders();
+        $this->renderHTMLStart();
+        $this->renderHeader();
     }
 
     /**
      * Render HTTP-headers
      */
-    public function OutputHeaders()
+    public function sendOutputHeaders()
     {
         header('Content-type: ' . $this->contentType . '; charset=' . $this->encoding);
     }
@@ -177,7 +176,7 @@ abstract class Page
      * Render:
      *  <html><head>...</head><body>
      */
-    public function RenderHTMLStart()
+    public function renderHTMLStart()
     {
         $page['html_attributes'] = $this->htmlAttributes;
         $page['encoding'] = $this->encoding;
@@ -188,51 +187,49 @@ abstract class Page
         $page['optional_head_content'] = trim($this->headContent);
         $page['body_attributes'] = $this->bodyAttributes;
 
-        $template = Template::getTemplate(__DIR__ . '/' . static::PATH_TO_TPL, static::TPL_HTML_START);
+        $template = Template::getTemplate(__DIR__ . '/' . static::TEMPLATE_PATH, static::TPL_HTML_START);
         $template->display($page);
     }
 
     /**
      * Render header
      */
-    public function RenderHeader()
+    public function renderHeader()
     {
-        $template = Template::getTemplate(__DIR__ . '/' . static::PATH_TO_TPL, static::TPL_HTML_HEADER);
-        $template->display(array());
-
-        if ($this->breadcrumbs)  {
-            $this->RenderBreadcrumbs();
-        }
+        $template = Template::getTemplate(__DIR__ . '/' . static::TEMPLATE_PATH, static::TPL_HTML_HEADER);
+        $template->display(array('breadcrumbs' => $this->_breadcrumbs));
     }
 
     /**
      * Render page finish
      */
-    public static function Finish()
+    public static function finish()
     {
-        static::Current()->RenderFinish();
+        static::getInstance()->renderFinish();
     }
 
     /**
      * Render:
      *  footer, js and </body></html>
      */
-    protected function RenderFinish()
+    protected function renderFinish()
     {
-        $this->RenderFooter();
-        $this->RenderHTMLEnd();
+        $this->renderFooter();
+        $this->renderHTMLEnd();
     }
 
     /**
      * Render footer
      */
-    protected function RenderFooter()
+    protected function renderFooter()
     {
-        global $debug;
+        $footer_values = array();
 
+        // $debug define in config develop.php
+        global $debug;
         if ($debug) {
             $footer_values['debug'] = $debug;
-            $footer_values['time_exec'] = number_format(debug_execution_time(), 3, ",", " ");
+            $footer_values['time_exec'] = number_format(microtime(true) - $GLOBALS['debug_execution_start'], 3, ",", " ");
             $footer_values['memory_usage'] = number_format(memory_get_peak_usage(true)/1024/1024, 1, ",", " ");
 
             if($GLOBALS["debug_db_queries_count"]){
@@ -244,25 +241,22 @@ abstract class Page
                 $footer_values['debug_heaviest_query_time'] = 0;
                 $footer_values['debug_heaviest_query'] = '-';
             }
-
-        } else {
-            $footer_values = array();
         }
 
-        $template = Template::getTemplate(__DIR__ . '/' . static::PATH_TO_TPL, static::TPL_HTML_FOOTER);
+        $template = Template::getTemplate(__DIR__ . '/' . static::TEMPLATE_PATH, static::TPL_HTML_FOOTER);
         $template->display($footer_values);
     }
 
     /**
      * Render HTML end
      */
-    public function RenderHTMLEnd()
+    public function renderHTMLEnd()
     {
         $page['javascripts_body'] = $this->javascriptsBody;
         $page['javascript_inline'] = $this->javascriptsInline;
         $page['css_body'] = $this->CSSBody;
 
-        $template = Template::getTemplate(__DIR__ . '/' . static::PATH_TO_TPL, static::TPL_HTML_END);
+        $template = Template::getTemplate(__DIR__ . '/' . static::TEMPLATE_PATH, static::TPL_HTML_END);
         $template->display($page);
     }
 
@@ -271,27 +265,17 @@ abstract class Page
      *
      * @param string $title
      * @param string $url
-     * @param string $icon
+     * @param string $icon twitter bootsrap glyphicon class for icon
      * @param string $hint
-     * @param bool   $inactive if true, then color grey
      */
-    public function AddBreadcrumb($title, $url = '', $icon = '', $hint = '', $inactive = false)
+    public function addBreadcrumb($title, $url = '', $glyphicon  = '', $hint = '')
     {
-        $this->breadcrumbs[] = array(
-            'title'    => trim($title),
-            'url'      => trim($url),
-            'icon'     => trim($icon),
-            'hint'     => trim($hint),
-            'inactive' => trim($inactive),
+        $this->_breadcrumbs[] = array(
+            'title' => trim($title),
+            'url'   => trim($url),
+            'glyphicon'  => trim($glyphicon),
+            'hint'  => trim($hint),
         );
     }
-
-    /**
-     * Render breadcrumbs
-     */
-    protected function RenderBreadcrumbs()
-    {
-    }
-
 }
 
