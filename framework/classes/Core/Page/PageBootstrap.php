@@ -3,11 +3,11 @@ namespace Core\Page;
 use Core\Template;
 
 /**
- * Page on Twitter Bootstrap
+ * Page based on Twitter Bootstrap
  */
 class PageBootstrap extends Page
 {
-    const TEMPLATE_PATH  = 'PageBootstrap/tpl';
+    const TEMPLATE_PATH   = 'PageBootstrap/tpl';
 
     const TPL_HTML_START  = 'html_start.html';
     const TPL_HTML_END    = 'html_end.html';
@@ -26,7 +26,7 @@ class PageBootstrap extends Page
     );
 
     /**
-     * Render Page with status code message
+     * Renders page with status code message
      *
      * @param string $message
      */
