@@ -1,3 +1,3 @@
 # Smally
 
-Smally is a small framework
+Smally is just another small PHP framework.
