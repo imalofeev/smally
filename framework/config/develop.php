@@ -1,7 +1,21 @@
 <?php
 /**
- * Develop config
+ * Dev config
  */
+
+// errors ON
+error_reporting(E_ALL ^ E_NOTICE);
+ini_set('display_startup_errors', 'on');
+ini_set('display_errors', 'on');
+ini_set('html_errors', 'on');
+ini_set('log_errors', 'off');
+ini_set('docref_root', 'http://php.net/manual/en/');
+
+// paths
+$config['path']['root']    = $_SERVER['DOCUMENT_ROOT'];
+$config['path']['cache']   = $config['path']['root'] . '/cache';
+$config['path']['classes'] = $config['path']['root'] . '/classes';
+$config['path']['files']   = $config['path']['root'] . '/files';
 
 // debug
 $debug = true;
@@ -10,21 +24,6 @@ $debug_db_queries_count = 0;
 $debug_heaviest_query_time = 0;
 
 set_exception_handler('my_exception_handler');
-
-// setting errors
-error_reporting(E_ALL ^ E_NOTICE);
-ini_set('display_startup_errors', 'on');
-ini_set('display_errors', 'on');
-ini_set('html_errors', 'on');
-ini_set('docref_root', 'http://php.net/manual/en/');
-ini_set('log_errors', 'off');
-
-
-// paths:
-$config['path']['root']    = $_SERVER['DOCUMENT_ROOT'];
-$config['path']['cache']   = $config['path']['root'] . '/cache';
-$config['path']['classes'] = $config['path']['root'] . '/classes';
-$config['path']['files']   = $config['path']['root'] . '/files';
 
 /**
  * Uncaught exception handler

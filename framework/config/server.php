@@ -1,14 +1,14 @@
 <?php
 /*
- * Server config
+ * Prod config
  */
 
-// errors off
+// errors OFF
 error_reporting(E_ALL ^ E_NOTICE);
 ini_set('display_startup_errors', 'off');
 ini_set('display_errors', 'off');
 
-// paths:
+// paths
 $config['path']['root']    = $_SERVER['DOCUMENT_ROOT'];
 $config['path']['cache']   = $config['path']['root'] . '/cache';
 $config['path']['classes'] = $config['path']['root'] . '/classes';

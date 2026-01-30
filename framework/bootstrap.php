@@ -1,7 +1,7 @@
 <?php
 
-//require_once 'config/server.php'; // server config
-require_once 'config/develop.php'; // your develop config
+//require_once 'config/server.php';  // prod config
+require_once 'config/develop.php';   // dev config
 
 // Require and register Twig
 require_once $_SERVER['DOCUMENT_ROOT'] . '/lib/Twig/Autoloader.php';
@@ -9,6 +9,7 @@ spl_autoload_register(array('Twig_Autoloader', 'autoload'), true, true);
 
 // register autoload function in spl, for framework classes
 spl_autoload_register('autoload', true);
+
 
 /**
  * Autoloader (PSR-0)
@@ -19,9 +20,9 @@ function autoload($class)
 {
     global $config;
     
-    $className     = $config['path']['classes'] . '/' . ltrim($class, '\\');
+    $className     = $config['path']['classes'] . '/'                    . ltrim($class, '\\');
     $classNameApp  = $config['path']['classes'] . '/App/' . $class . '/' . ltrim($class, '\\');
-    $classNameApp_ = $config['path']['classes'] . '/App/' . ltrim($class, '\\');
+    $classNameApp_ = $config['path']['classes'] . '/App/'                . ltrim($class, '\\');
 
     $fileName  = '';
 
@@ -31,7 +32,7 @@ function autoload($class)
         $fileName  = str_replace('\\', '/', $namespace) . '/';
     }
 
-    $fileName     .= str_replace('_', '/', $className)     . '.php';
+    $fileName    .= str_replace('_', '/', $className)     . '.php';
     $fileNameApp  = str_replace('_', '/', $classNameApp)  . '.php';
     $fileNameApp_ = str_replace('_', '/', $classNameApp_) . '.php';
 
